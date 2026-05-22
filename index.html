@@ -3,36 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DreamForge Studio - Video Editor</title>
+    <title>DreamForge Studio PRO</title>
     <style>
         :root {
-            --bg-dark: #121214;
-            --panel-bg: #1a1a1e;
-            --panel-border: #2c2c35;
+            --bg-dark: #0f0f11;
+            --panel-bg: #16161a;
+            --panel-border: #26262e;
             --accent: #007acc;
             --accent-hover: #0098ff;
             --text: #e1e1e6;
-            --text-dim: #a0a0a5;
+            --text-dim: #8f8f9d;
+            --timeline-bg: #111113;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; user-select: none; }
+        body { background-color: var(--bg-dark); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Barra de herramientas superior */
         header {
             background-color: var(--panel-bg);
             border-bottom: 2px solid var(--panel-border);
@@ -40,133 +26,112 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
-        h1 {
-            font-size: 1.2rem;
-            letter-spacing: 1px;
-            color: var(--text);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
+        h1 { font-size: 1.1rem; letter-spacing: 1px; color: var(--text); }
 
         .btn {
             background: linear-gradient(180deg, #2d2d35 0%, #1e1e24 100%);
             border: 1px solid var(--panel-border);
             color: var(--text);
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 6px 14px;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 0.85rem;
             font-weight: 600;
-            transition: all 0.2s;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
         }
+        .btn:hover { border-color: var(--accent); }
+        .btn-active { background: var(--accent); border-color: var(--accent-hover); }
 
-        .btn:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 8px rgba(0, 122, 204, 0.4);
-        }
-
-        .btn-primary {
-            background: linear-gradient(180deg, var(--accent-hover) 0%, var(--accent) 100%);
-            border: 1px solid #005999;
-        }
-
-        /* Contenedor Principal */
+        /* Workspace Grid */
         .workspace {
             flex: 1;
             display: grid;
-            grid-template-columns: 300px 1fr;
-            grid-template-rows: 1fr 250px;
-            height: calc(100vh - 54px);
+            grid-template-columns: 320px 1fr 300px;
+            grid-template-rows: 1fr 280px;
+            height: calc(100vh - 50px);
         }
 
-        /* Panel Lateral (Archivos) */
-        .panel-assets {
+        /* Panel Izquierdo: Assets */
+        .panel-left {
             background-color: var(--panel-bg);
             border-right: 2px solid var(--panel-border);
-            grid-row: 1;
             padding: 15px;
             display: flex;
             flex-direction: column;
             gap: 15px;
+            grid-row: 1;
         }
 
-        .upload-box {
+        .upload-zone {
             border: 2px dashed var(--panel-border);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 6px;
+            padding: 15px;
             text-align: center;
             color: var(--text-dim);
             cursor: pointer;
-            transition: border 0.2s;
+            font-size: 0.9rem;
         }
+        .upload-zone:hover { border-color: var(--accent); color: var(--text); }
 
-        .upload-box:hover {
-            border-color: var(--accent);
-            color: var(--text);
-        }
-
-        .asset-list {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
+        .asset-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .asset-item {
-            background-color: #222226;
+            background-color: #1e1e24;
             border: 1px solid var(--panel-border);
-            padding: 10px;
-            border-radius: 6px;
+            padding: 8px 12px;
+            border-radius: 4px;
             cursor: grab;
+            font-size: 0.8rem;
             display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.85rem;
+            justify-content: space-between;
         }
 
-        /* Panel de Previsualización (Monitor) */
-        .panel-preview {
+        /* Panel Central: Monitor */
+        .panel-center {
             grid-column: 2;
-            grid-row: 1;
+            background-color: #09090b;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background-color: #0b0b0d;
             padding: 20px;
             position: relative;
         }
 
-        .monitor-container {
-            position: relative;
-            max-width: 100%;
-            max-height: 75%;
+        .monitor-wrapper {
+            width: 100%;
+            max-width: 720px;
             aspect-ratio: 16 / 9;
             background-color: #000;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-            border-radius: 4px;
-            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            position: relative;
         }
+        canvas { width: 100%; height: 100%; display: block; }
 
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
+        .controls { margin-top: 12px; display: flex; gap: 15px; align-items: center; }
 
-        .player-controls {
-            margin-top: 15px;
+        /* Panel Derecho: Inspector de Propiedades */
+        .panel-right {
+            background-color: var(--panel-bg);
+            border-left: 2px solid var(--panel-border);
+            padding: 15px;
             display: flex;
-            gap: 10px;
-            align-items: center;
+            flex-direction: column;
+            gap: 15px;
+            font-size: 0.85rem;
         }
+        .inspector-group {
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 12px;
+        }
+        .inspector-group h3 { font-size: 0.9rem; margin-bottom: 8px; color: var(--text-dim); }
+        .control-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .control-row input[type="range"] { width: 120px; }
+        .control-row input[type="number"] { width: 60px; background: #222; border: 1px solid #444; color: #fff; padding: 2px; }
 
-        /* Línea de Tiempo (Timeline) */
+        /* Panel Inferior: Timeline Avanzado */
         .panel-timeline {
-            grid-column: 1 / span 2;
+            grid-column: 1 / span 3;
             grid-row: 2;
             background-color: var(--panel-bg);
             border-top: 2px solid var(--panel-border);
@@ -174,300 +139,578 @@
             flex-direction: column;
         }
 
-        .timeline-header {
-            background-color: #151518;
+        .timeline-toolbar {
+            background-color: #121215;
             padding: 6px 20px;
             border-bottom: 1px solid var(--panel-border);
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-size: 0.8rem;
-            color: var(--text-dim);
         }
 
-        .timeline-body {
+        .timeline-container {
             flex: 1;
-            position: relative;
             overflow-x: auto;
-            overflow-y: hidden;
-            padding: 20px;
-            background-color: #131316;
-        }
-
-        .track {
-            height: 80px;
-            background-color: #1a1a1e;
-            border: 2px dashed #2c2c35;
-            border-radius: 8px;
+            overflow-y: auto;
             position: relative;
-            width: 100%;
-            min-width: 800px;
+            background-color: var(--timeline-bg);
+            padding: 10px 0;
         }
 
-        .track.drag-over {
-            border-color: var(--accent);
-            background-color: rgba(0, 122, 204, 0.05);
-        }
-
-        .clip {
-            position: absolute;
-            top: 5px;
-            height: 66px;
-            background: linear-gradient(135deg, #005999 0%, #007acc 100%);
-            border: 1px solid #0098ff;
-            color: white;
-            border-radius: 6px;
-            padding: 10px;
+        .tracks-wrapper {
+            position: relative;
             display: flex;
             flex-direction: column;
+            gap: 6px;
+            padding-left: 100px; /* Espacio para etiquetas de capa */
+            min-width: 2000px;
+        }
+
+        .track-label {
+            position: absolute;
+            left: 0;
+            width: 90px;
+            height: 50px;
+            background-color: #1e1e24;
+            border: 1px solid var(--panel-border);
+            display: flex;
+            align-items: center;
             justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 5;
+        }
+
+        .timeline-track {
+            height: 50px;
+            background-color: #151519;
+            border: 1px solid #222;
+            position: relative;
+            width: 100%;
+        }
+
+        .timeline-track.drag-over { background-color: rgba(0, 122, 204, 0.1); }
+
+        .timeline-clip {
+            position: absolute;
+            top: 2px;
+            height: 44px;
+            background: linear-gradient(135deg, #2b5c8f 0%, #1a3a60 100%);
+            border: 1px solid #3a7bc0;
+            border-radius: 4px;
+            color: white;
+            padding: 4px 8px;
+            font-size: 0.7rem;
             cursor: pointer;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-
-        .clip span {
-            font-size: 0.8rem;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .timeline-clip.selected { border-color: #ffcc00; box-shadow: 0 0 8px rgba(255, 204, 0, 0.5); }
+        
+        /* Handles de recorte (Trim) */
+        .trim-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background-color: rgba(255,255,255,0.3);
+            cursor: ew-resize;
         }
+        .trim-left { left: 0; }
+        .trim-right { right: 0; }
 
-        /* Playhead (Indicador de tiempo actual) */
+        /* Aguja global (Playhead) */
         .playhead {
             position: absolute;
             top: 0;
             bottom: 0;
             width: 2px;
             background-color: #ff3333;
-            left: 20px;
+            left: 100px; /* Sincronizado con el padding lateral */
             pointer-events: none;
             z-index: 10;
         }
-
         .playhead::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -5px;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
+            content: ''; position: absolute; top: 0; left: -5px;
+            border-left: 6px solid transparent; border-right: 6px solid transparent;
             border-top: 8px solid #ff3333;
-        }
-
-        #file-input {
-            display: none;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>DREAMFORGE STUDIO</h1>
-        <button class="btn btn-primary" id="export-btn">Exportar Proyecto</button>
+        <h1>DREAMFORGE ENGINE - MULTILAYER NLE</h1>
+        <button class="btn btn-active" onclick="exportTimeline()">Renderizar Salida</button>
     </header>
 
     <div class="workspace">
-        <!-- Panel de Archivos -->
-        <div class="panel-assets">
-            <div class="upload-box" onclick="document.getElementById('file-input').click()">
-                <p>+ Importar Video</p>
-                <span style="font-size: 0.75rem; color: var(--text-dim);">Soporta MP4, WebM</span>
+        <!-- Panel Izquierdo: Assets -->
+        <div class="panel-left">
+            <div class="upload-zone" onclick="document.getElementById('file-loader').click()">
+                <p>+ Cargar Archivos</p>
+                <span style="font-size: 0.7rem; color: var(--text-dim)">Video, Imagen o Audio</span>
             </div>
-            <input type="file" id="file-input" accept="video/*">
-            <div class="asset-list" id="asset-list">
-                <!-- Los archivos importados aparecerán aquí -->
+            <input type="file" id="file-loader" accept="video/*,image/*,audio/*" multiple style="display:none">
+            <div class="asset-list" id="asset-list"></div>
+        </div>
+
+        <!-- Panel Central: Monitor -->
+        <div class="panel-center">
+            <div class="monitor-wrapper">
+                <canvas id="main-monitor"></canvas>
+            </div>
+            <div class="controls">
+                <button class="btn" id="btn-play" onclick="togglePlayback()">Reproducir</button>
+                <div id="timecode" style="font-family: monospace;">00:00.00</div>
             </div>
         </div>
 
-        <!-- Monitor de Previsualización -->
-        <div class="panel-preview">
-            <div class="monitor-container">
-                <canvas id="monitor"></canvas>
-            </div>
-            <div class="player-controls">
-                <button class="btn" id="btn-play">Reproducir</button>
-                <div id="time-display" style="font-family: monospace; font-size: 0.9rem;">00:00:00</div>
-            </div>
+        <!-- Panel Derecho: Inspector de Propiedades -->
+        <div class="panel-right" id="inspector">
+            <p style="color: var(--text-dim); text-align: center; margin-top: 20px;">Selecciona un clip para editar sus propiedades</p>
         </div>
+    </div>
 
-        <!-- Línea de Tiempo -->
-        <div class="panel-timeline">
-            <div class="timeline-header">
-                <div>Línea de Tiempo Principal</div>
-                <div id="timeline-duration" style="font-family: monospace;">Duración: 0.0s</div>
-            </div>
-            <div class="timeline-body" id="timeline-body">
-                <div class="playhead" id="playhead"></div>
-                <div class="track" id="video-track">
-                    <!-- Aquí se arrastran los clips -->
-                </div>
+    <!-- Panel Inferior: Timeline -->
+    <div class="panel-timeline">
+        <div class="timeline-toolbar">
+            <div>Líneas de Composición Multi-Capa</div>
+            <div style="font-family: monospace;" id="total-duration">Tiempo Máx: 0.0s</div>
+        </div>
+        <div class="timeline-container" id="timeline-container" onclick="movePlayheadViaTimeline(event)">
+            <div class="playhead" id="global-playhead"></div>
+            
+            <div class="tracks-wrapper">
+                <!-- Capa 1: Video -->
+                <div class="track-label" style="top: 0;">Capa Video</div>
+                <div class="timeline-track" id="track-video" data-type="video" style="margin-top: 0;"></div>
+
+                <!-- Capa 2: Gráficos / Imagen -->
+                <div class="track-label" style="top: 56px;">Capa Imagen</div>
+                <div class="timeline-track" id="track-image" data-type="image"></div>
+
+                <!-- Capa 3: Audio -->
+                <div class="track-label" style="top: 112px;">Capa Audio</div>
+                <div class="timeline-track" id="track-audio" data-type="audio"></div>
             </div>
         </div>
     </div>
 
-    <!-- Elemento de video oculto que usaremos para decodificar los frames en el canvas -->
-    <video id="hidden-video" style="display:none;"></video>
-
     <script>
-        // Variables de estado
-        let activeVideoFile = null;
+        // --- BASE DE DATOS DE LA COMPOSICIÓN (STATE) ---
+        let assets = {};
+        let timelineClips = [];
+        let selectedClip = null;
+        let currentTime = 0; 
         let isPlaying = false;
-        let videoDuration = 0;
         let animationFrameId = null;
+        const PIXELS_PER_SECOND = 30; // Factor de escala para el timeline
 
-        // Elementos del DOM
-        const fileInput = document.getElementById('file-input');
-        const assetList = document.getElementById('asset-list');
-        const hiddenVideo = document.getElementById('hidden-video');
-        const canvas = document.getElementById('monitor');
+        const canvas = document.getElementById('main-monitor');
         const ctx = canvas.getContext('2d');
-        const btnPlay = document.getElementById('btn-play');
-        const timeDisplay = document.getElementById('time-display');
-        const videoTrack = document.getElementById('video-track');
-        const playhead = document.getElementById('playhead');
-        const timelineDuration = document.getElementById('timeline-duration');
-        const exportBtn = document.getElementById('export-btn');
+        canvas.width = 1280;
+        canvas.height = 720;
 
-        // Configurar dimensiones iniciales del Canvas (1080p interno escalado por CSS)
-        canvas.width = 1920;
-        canvas.height = 1080;
-        
-        // Dibujar pantalla en negro inicial
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Limpieza de pantalla inicial
+        clearMonitor();
 
-        // 1. Importar Archivos
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+        // --- SISTEMA DE CARGA DE ARCHIVOS ---
+        document.getElementById('file-loader').addEventListener('change', function(e) {
+            Array.from(e.target.files).forEach(file => {
+                const id = 'asset-' + Date.now() + Math.random().toString(36).substr(2, 5);
+                const url = URL.createObjectURL(file);
+                let type = 'image';
 
-            activeVideoFile = file;
-            const objectURL = URL.createObjectURL(file);
-            hiddenVideo.src = objectURL;
+                if (file.type.startsWith('video')) type = 'video';
+                if (file.type.startsWith('audio')) type = 'audio';
 
-            // Limpiar lista anterior y agregar elemento visual
-            assetList.innerHTML = '';
-            const item = document.createElement('div');
-            item.className = 'asset-item';
-            item.draggable = true;
-            item.innerHTML = `🎥 <span>${file.name}</span>`;
-            
-            // Configurar Drag & Drop
-            item.addEventListener('dragstart', (ev) => {
-                ev.dataTransfer.setData('text/plain', objectURL);
+                let element;
+                if (type === 'video') {
+                    element = document.createElement('video');
+                    element.src = url;
+                    element.muted = true; // Muteado para procesamiento manual en Canvas
+                    element.load();
+                } else if (type === 'audio') {
+                    element = document.createElement('audio');
+                    element.src = url;
+                } else {
+                    element = new Image();
+                    element.src = url;
+                }
+
+                assets[id] = { id, name: file.name, type, element, url };
+
+                // Renderizar en el panel de recursos
+                const item = document.createElement('div');
+                item.className = 'asset-item';
+                item.draggable = true;
+                item.innerHTML = `<span>${type === 'video' ? '🎥' : type === 'audio' ? '🎵' : '🖼️'} ${file.name}</span>`;
+                item.addEventListener('dragstart', (ev) => {
+                    ev.dataTransfer.setData('text/asset-id', id);
+                });
+                document.getElementById('asset-list').appendChild(item);
             });
-            
-            assetList.appendChild(item);
         });
 
-        // 2. Controladores de la Línea de Tiempo (Drag & Drop de clips)
-        videoTrack.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            videoTrack.classList.add('drag-over');
-        });
+        // --- MANEJO DE DRAG & DROP EN EL TIMELINE ---
+        document.querySelectorAll('.timeline-track').forEach(track => {
+            track.addEventListener('dragover', e => e.preventDefault());
+            track.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const assetId = e.dataTransfer.getData('text/asset-id');
+                const asset = assets[assetId];
+                if (!asset) return;
 
-        videoTrack.addEventListener('dragleave', () => {
-            videoTrack.classList.remove('drag-over');
-        });
+                // Validar que caiga en su respectiva capa
+                if (track.dataset.type !== asset.type) {
+                    alert(`¡Error! El recurso tipo [${asset.type}] debe ir en su respectiva capa.`);
+                    return;
+                }
 
-        videoTrack.addEventListener('drop', (e) => {
-            e.preventDefault();
-            videoTrack.classList.remove('drag-over');
-            const objectURL = e.dataTransfer.getData('text/plain');
+                // Calcular posición de inserción según los píxeles del cursor
+                const rect = track.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const startTimePosition = clickX / PIXELS_PER_SECOND;
 
-            if (objectURL) {
-                // Esperar a que el video cargue los metadatos para conocer su duración real
-                hiddenVideo.onloadedmetadata = () => {
-                    videoDuration = hiddenVideo.duration;
-                    timelineDuration.textContent = `Duración: ${videoDuration.toFixed(1)}s`;
-                    
-                    // Crear el bloque visual del clip en el timeline
-                    videoTrack.innerHTML = ''; // Reemplaza por simplicidad en esta versión de clip único
-                    const clip = document.createElement('div');
-                    clip.className = 'clip';
-                    
-                    // Escalar el ancho del clip: 1 segundo = 40 píxeles de ancho
-                    const clipWidth = videoDuration * 40;
-                    clip.style.width = `${clipWidth}px`;
-                    clip.style.left = '0px';
-                    clip.innerHTML = `<span>${activeVideoFile.name}</span>`;
-                    
-                    videoTrack.appendChild(clip);
-                    updatePlayhead(0);
+                // Definir duración por defecto
+                let duration = 5; 
+                if (asset.type === 'video' || asset.type === 'audio') {
+                    duration = asset.element.duration || 5;
+                }
+
+                const newClip = {
+                    id: 'clip-' + Date.now(),
+                    assetId: assetId,
+                    type: asset.type,
+                    name: asset.name,
+                    start: startTimePosition,
+                    duration: duration,
+                    trimLeft: 0,
+                    // Propiedades geométricas & Efectos por defecto
+                    opacity: 1,
+                    scale: 100,
+                    posX: 0,
+                    posY: 0,
+                    filter: 'none',
+                    volume: 1
                 };
-            }
+
+                timelineClips.push(newClip);
+                renderTimelineUI();
+                updateMonitor();
+            });
         });
 
-        // 3. Motor de renderizado (Canvas Sync con Video Oculto)
-        function renderLoop() {
+        // --- RENDERIZADO VISUAL DEL TIMELINE UI ---
+        function renderTimelineUI() {
+            // Limpiar tracks visuales
+            document.querySelectorAll('.timeline-track').forEach(t => t.innerHTML = '');
+
+            let maxTime = 0;
+
+            timelineClips.forEach(clip => {
+                const track = document.getElementById(`track-${clip.type}`);
+                if (!track) return;
+
+                const clipEl = document.createElement('div');
+                clipEl.className = `timeline-clip ${selectedClip && selectedClip.id === clip.id ? 'selected' : ''}`;
+                clipEl.style.left = `${clip.start * PIXELS_PER_SECOND}px`;
+                clipEl.style.width = `${clip.duration * PIXELS_PER_SECOND}px`;
+                clipEl.innerHTML = `<strong>${clip.name}</strong><span>Duración: ${clip.duration.toFixed(1)}s</span>`;
+
+                // Agregar controladores de recorte (Trimming)
+                const leftHandle = document.createElement('div');
+                leftHandle.className = 'trim-handle trim-left';
+                const rightHandle = document.createElement('div');
+                rightHandle.className = 'trim-handle trim-right';
+
+                clipEl.appendChild(leftHandle);
+                clipEl.appendChild(rightHandle);
+
+                // Eventos de selección
+                clipEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectClip(clip);
+                });
+
+                // Funcionalidad de Trimming (Recorte de bordes)
+                setupTrim(leftHandle, clip, 'left');
+                setupTrim(rightHandle, clip, 'right');
+
+                track.appendChild(clipEl);
+
+                if (clip.start + clip.duration > maxTime) maxTime = clip.start + clip.duration;
+            });
+
+            document.getElementById('total-duration').textContent = `Tiempo Máx: ${maxTime.toFixed(1)}s`;
+        }
+
+        // --- LOGICA DE TRIMMING (RECORTAR CLIPS) ---
+        function setupTrim(handle, clip, side) {
+            handle.addEventListener('mousedown', function(e) {
+                e.stopPropagation();
+                const startX = e.clientX;
+                const originalStart = clip.start;
+                const originalDuration = clip.duration;
+                const originalTrimLeft = clip.trimLeft;
+
+                function onMouseMove(moveEvent) {
+                    const deltaX = moveEvent.clientX - startX;
+                    const deltaTime = deltaX / PIXELS_PER_SECOND;
+
+                    if (side === 'left') {
+                        if (originalDuration - deltaTime > 0.5) {
+                            clip.start = originalStart + deltaTime;
+                            clip.duration = originalDuration - deltaTime;
+                            clip.trimLeft = originalTrimLeft + deltaTime;
+                        }
+                    } else {
+                        if (originalDuration + deltaTime > 0.5) {
+                            clip.duration = originalDuration + deltaTime;
+                        }
+                    }
+                    renderTimelineUI();
+                    updateMonitor();
+                }
+
+                function onMouseUp() {
+                    window.removeEventListener('mousemove', onMouseMove);
+                    window.removeEventListener('mouseup', onMouseUp);
+                }
+
+                window.addEventListener('mousemove', onMouseMove);
+                window.addEventListener('mouseup', onMouseUp);
+            });
+        }
+
+        // --- INSPECTOR DE PROPIEDADES DINÁMICO ---
+        function selectClip(clip) {
+            selectedClip = clip;
+            renderTimelineUI();
+
+            const inspector = document.getElementById('inspector');
+            inspector.innerHTML = `
+                <h2 style="font-size: 1rem; color: #fff;">Propiedades del Clip</h2>
+                <p style="font-size:0.75rem; color: var(--text-dim)">${clip.name}</p>
+                <hr style="border: 1px solid var(--panel-border)">
+                
+                <div class="inspector-group">
+                    <h3>Transformación</h3>
+                    <div class="control-row">
+                        <label>Escala (%)</label>
+                        <input type="range" min="10" max="300" value="${clip.scale}" oninput="updateProp('scale', this.value)">
+                    </div>
+                    <div class="control-row">
+                        <label>Posición X</label>
+                        <input type="number" value="${clip.posX}" onchange="updateProp('posX', parseInt(this.value))">
+                    </div>
+                    <div class="control-row">
+                        <label>Posición Y</label>
+                        <input type="number" value="${clip.posY}" onchange="updateProp('posY', parseInt(this.value))">
+                    </div>
+                </div>
+
+                <div class="inspector-group">
+                    <h3>Efectos Visuales</h3>
+                    <div class="control-row">
+                        <label>Opacidad</label>
+                        <input type="range" min="0" max="1" step="0.1" value="${clip.opacity}" oninput="updateProp('opacity', this.value)">
+                    </div>
+                    <div class="control-row">
+                        <label>Filtro FX</label>
+                        <select onchange="updateProp('filter', this.value)" style="background:#222; color:#fff; border:1px solid #444; padding:3px;">
+                            <option value="none" ${clip.filter === 'none' ? 'selected' : ''}>Ninguno</option>
+                            <option value="grayscale(100%)" ${clip.filter.includes('grayscale') ? 'selected' : ''}>Blanco y Negro</option>
+                            <option value="sepia(80%)" ${clip.filter.includes('sepia') ? 'selected' : ''}>Nostalgia Sepia</option>
+                            <option value="hue-rotate(90deg)" ${clip.filter.includes('hue-rotate') ? 'selected' : ''}>Psicodélico</option>
+                            <option value="invert(100%)" ${clip.filter.includes('invert') ? 'selected' : ''}>Invertido</option>
+                            <option value="blur(5px)" ${clip.filter.includes('blur') ? 'selected' : ''}>Desenfoque</option>
+                        </select>
+                    </div>
+                </div>
+
+                ${clip.type === 'audio' || clip.type === 'video' ? `
+                <div class="inspector-group">
+                    <h3>Audio</h3>
+                    <div class="control-row">
+                        <label>Volumen</label>
+                        <input type="range" min="0" max="1" step="0.1" value="${clip.volume}" oninput="updateProp('volume', this.value)">
+                    </div>
+                </div>
+                ` : ''}
+                
+                <button class="btn" style="background:#cc3333; width:100%; border:none; margin-top:10px;" onclick="deleteSelectedClip()">Eliminar Clip</button>
+            `;
+        }
+
+        function updateProp(property, value) {
+            if (selectedClip) {
+                selectedClip[property] = value;
+                updateMonitor();
+            }
+        }
+
+        function deleteSelectedClip() {
+            if (!selectedClip) return;
+            // Si es un audio o video track, asegurar apagar su sonido antes de borrar
+            if (selectedClip.type === 'video' || selectedClip.type === 'audio') {
+                const asset = assets[selectedClip.assetId];
+                if(asset) asset.element.pause();
+            }
+            timelineClips = timelineClips.filter(c => c.id !== selectedClip.id);
+            selectedClip = null;
+            document.getElementById('inspector').innerHTML = '<p style="color: var(--text-dim); text-align: center; margin-top: 20px;">Selecciona un clip para editar sus propiedades</p>';
+            renderTimelineUI();
+            updateMonitor();
+        }
+
+        // --- NÚCLEO DE PROCESAMIENTO GRÁFICO (MONITOR ENGINE) ---
+        function clearMonitor() {
+            ctx.fillStyle = '#050507';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Cuadrícula técnica de fondo de video profesional
+            ctx.strokeStyle = '#111116';
+            ctx.lineWidth = 2;
+            for(let i=0; i<canvas.width; i+=80) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+            for(let j=0; j<canvas.height; j+=45) { ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke(); }
+        }
+
+        function updateMonitor() {
+            clearMonitor();
+
+            // Orden de Capas Crítico para Composición (Abajo hacia Arriba): Audio -> Video -> Imagen/Gráfico
+            const renderOrder = ['video', 'image'];
+
+            renderOrder.forEach(layerType => {
+                const activeClipsInLayer = timelineClips.filter(c => c.type === layerType && currentTime >= c.start && currentTime <= (c.start + c.duration));
+                
+                activeClipsInLayer.forEach(clip => {
+                    const asset = assets[clip.assetId];
+                    if (!asset) return;
+
+                    ctx.save();
+                    
+                    // Aplicar propiedades de transformación
+                    ctx.globalAlpha = parseFloat(clip.opacity);
+                    ctx.filter = clip.filter;
+
+                    // Centrado inicial de composición
+                    let targetW = canvas.width;
+                    let targetH = canvas.height;
+
+                    if (clip.type === 'image') {
+                        // Mantener ratio de imagen por defecto
+                        const ratio = asset.element.width / asset.element.height;
+                        targetH = canvas.height * 0.5; 
+                        targetW = targetH * ratio;
+                    }
+
+                    // Escalado por propiedades del inspector
+                    targetW *= (clip.scale / 100);
+                    targetH *= (clip.scale / 100);
+
+                    const xPos = (canvas.width - targetW) / 2 + parseInt(clip.posX);
+                    const yPos = (canvas.height - targetH) / 2 + parseInt(clip.posY);
+
+                    if (clip.type === 'video') {
+                        const vElement = asset.element;
+                        // Sincronizar el puntero del video con el puntero global del timeline
+                        const internalVideoTime = (currentTime - clip.start) + clip.trimLeft;
+                        
+                        if (Math.abs(vElement.currentTime - internalVideoTime) > 0.1) {
+                            vElement.currentTime = internalVideoTime;
+                        }
+                        
+                        ctx.drawImage(vElement, xPos, yPos, targetW, targetH);
+                    } else if (clip.type === 'image') {
+                        ctx.drawImage(asset.element, xPos, yPos, targetW, targetH);
+                    }
+
+                    ctx.restore();
+                });
+            });
+
+            // Manejo paralelo independiente de la Capa de Audio de fondo
+            timelineClips.filter(c => c.type === 'audio' || c.type === 'video').forEach(clip => {
+                const asset = assets[clip.assetId];
+                if (!asset) return;
+                
+                const element = asset.element;
+                const isInsideTimeline = currentTime >= clip.start && currentTime <= (clip.start + clip.duration);
+
+                if (isInsideTimeline && isPlaying) {
+                    element.volume = clip.volume;
+                    const internalTime = (currentTime - clip.start) + clip.trimLeft;
+                    if (Math.abs(element.currentTime - internalTime) > 0.15) {
+                        element.currentTime = internalTime;
+                    }
+                    if (element.paused) element.play().catch(()=>{});
+                } else {
+                    if (!element.paused) element.pause();
+                }
+            });
+        }
+
+        // --- MOTOR DE REPRODUCCIÓN (PLAYBACK CONTEXT) ---
+        function playbackLoop() {
             if (!isPlaying) return;
 
-            // Dibujar el fotograma actual del video en el lienzo
-            ctx.drawImage(hiddenVideo, 0, 0, canvas.width, canvas.height);
+            currentTime += 1 / 30; // Simulando refresco regular de 30 FPS estándar
             
-            // Aplicar un sutil filtro de color en tiempo real (puedes modificar esto)
-            // Ejemplo: un ligero boost de contraste/saturación digital
-            ctx.fillStyle = 'rgba(0, 122, 204, 0.03)';
-            ctx.globalCompositeOperation = 'color-burn';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.globalCompositeOperation = 'source-over';
+            // Mover visualmente el playhead
+            const playheadLeft = 100 + (currentTime * PIXELS_PER_SECOND);
+            document.getElementById('global-playhead').style.left = `${playheadLeft}px`;
 
-            // Actualizar tiempos e interfaz
-            updateTimeDisplay(hiddenVideo.currentTime);
-            
-            // Mover la aguja (playhead): 20px de margen inicial + 40px por segundo
-            const currentLeft = 20 + (hiddenVideo.currentTime * 40);
-            playhead.style.left = `${currentLeft}px`;
+            // Actualizar reloj de código de tiempo
+            const mins = Math.floor(currentTime / 60).toString().padStart(2, '0');
+            const secs = Math.floor(currentTime % 60).toString().padStart(2, '0');
+            const ms = Math.floor((currentTime % 1) * 100).toString().padStart(2, '0');
+            document.getElementById('timecode').textContent = `${mins}:${secs}.${ms}`;
 
-            if (hiddenVideo.ended) {
-                stopPlayback();
-            } else {
-                animationFrameId = requestAnimationFrame(renderLoop);
-            }
+            updateMonitor();
+            animationFrameId = requestAnimationFrame(playbackLoop);
         }
 
-        function updatePlayhead(time) {
-            const currentLeft = 20 + (time * 40);
-            playhead.style.left = `${currentLeft}px`;
-            updateTimeDisplay(time);
-        }
-
-        function updateTimeDisplay(seconds) {
-            const date = new Date(null);
-            date.setSeconds(seconds);
-            const milliseconds = Math.floor((seconds % 1) * 100);
-            timeDisplay.textContent = date.toISOString().substr(11, 8) + ':' + milliseconds.toString().padStart(2, '0');
-        }
-
-        // 4. Controles de Reproducción
         function togglePlayback() {
-            if (!activeVideoFile) return alert('¡Primero arrastra el archivo de video a la línea de tiempo!');
-
+            const btn = document.getElementById('btn-play');
             if (isPlaying) {
-                stopPlayback();
+                isPlaying = false;
+                btn.textContent = 'Reproducir';
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                
+                // Pausar todos los emisores de hardware de audio
+                timelineClips.forEach(c => {
+                    const asset = assets[c.assetId];
+                    if (asset && (c.type === 'video' || c.type === 'audio')) asset.element.pause();
+                });
             } else {
                 isPlaying = true;
-                btnPlay.textContent = 'Pausar';
-                hiddenVideo.play();
-                renderLoop();
+                btn.textContent = 'Pausar';
+                playbackLoop();
             }
         }
 
-        function stopPlayback() {
-            isPlaying = false;
-            btnPlay.textContent = 'Reproducir';
-            hiddenVideo.pause();
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        function movePlayheadViaTimeline(e) {
+            // Evitar detonar si hace click en un clip directamente
+            if(e.target.classList.contains('timeline-clip') || e.target.closest('.timeline-clip')) return;
+            
+            const rect = document.getElementById('timeline-container').getBoundingClientRect();
+            const clickX = e.clientX - rect.left - 100; // Ajuste por la barra de control fija
+            if (clickX < 0) return;
+
+            currentTime = clickX / PIXELS_PER_SECOND;
+            document.getElementById('global-playhead').style.left = `${clickX + 100}px`;
+            
+            updateMonitor();
         }
 
-        btnPlay.addEventListener('click', togglePlayback);
-
-        // 5. Botón de Exportar simulado
-        exportBtn.addEventListener('click', () => {
-            if (!activeVideoFile) return alert('No hay clips en el timeline para procesar.');
-            alert('¡Procesando línea de tiempo!\nEn un entorno de producción completo, aquí usaríamos MediaRecorder de JavaScript o FFmpeg.wasm para compilar el Canvas y guardarlo en un archivo MP4 real.');
-        });
+        function exportTimeline() {
+            alert("🛠️ COMPILADOR DE RENDER\n\nTu línea de tiempo estructurada con capas complejas y efectos gráficos está lista. En un software completo de distribución de escritorio, este botón inicializaría un pipeline a través de 'FFmpeg.wasm' o capturaría los buffers con 'MediaRecorder' para exportar tu archivo final comprimido en H.264 MP4.");
+        }
     </script>
 </body>
 </html>
