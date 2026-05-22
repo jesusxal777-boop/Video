@@ -706,60 +706,105 @@
             updateMonitor();
         }
 
-        // --- EXPORTACIÓN DEFINITIVA A VIDEO WEBMA/MP4 ---
+        // --- 💥 SISTEMA DE EXPORTACIÓN DEFINITIVO POR CAPTURA DE BUFFERS (FIXED DOWNLOAD) 💥 ---
         function exportRealVideo() {
             if (timelineClips.length === 0) return alert("Añade algún clip antes de compilar.");
             
-            alert("Iniciando Renderizador de Hardware por GPU...\nEl sistema procesará cuadro por cuadro todos los fundidos, cortes y paneos directamente a un archivo de video final.");
+            // Cambiar estatus del botón visualmente para dar feedback al usuario
+            const exportBtn = document.querySelector('header .btn-active');
+            const originalText = exportBtn.textContent;
+            exportBtn.textContent = "⚙️ Renderizando... 0%";
+            exportBtn.style.background = "#ff9900";
+            exportBtn.disabled = true;
 
             if (isPlaying) togglePlayback();
             currentTime = 0;
             updateMonitor();
 
-            // Captura el stream de video crudo generado por el Canvas a 30 FPS fijos
-            const stream = canvas.captureStream(30);
-            
-            // Usamos VP9/VP8 que es el estándar universal compatible con MediaRecorder sin servidores externos
-            const recorder = new MediaRecorder(stream, {
-                mimeType: 'video/webm;codecs=vp9',
-                videoBitsPerSecond: 6000000 // 6 Mbps (Calidad HD limpia)
-            });
-
+            // 1. Forzar al Canvas a generar un Stream controlado por fotogramas físicos
+            const videoStream = canvas.captureStream(30); 
             const chunks = [];
-            recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+            
+            // 2. Intentar usar codecs universales que Windows y Mac entiendan nativamente
+            let options = { mimeType: 'video/webm;codecs=vp8' };
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                options = { mimeType: 'video/webm' }; // Fallback si es un navegador móvil u operativo antiguo
+            }
 
-            recorder.onstop = () => {
-                const blob = new Blob(chunks, { type: 'video/webm' });
-                const url = URL.createObjectURL(blob);
-                
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `DreamForge_Master_Render_${Date.now()}.webm`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                alert("¡Exportación finalizada con éxito! Video descargado.");
-                currentTime = 0;
-                updateMonitor();
+            const recorder = new MediaRecorder(videoStream, options);
+
+            // Ir empujando los bloques de bytes crudos al arreglo conforme la GPU los procese
+            recorder.ondataavailable = e => {
+                if (e.data && e.data.size > 0) {
+                    chunks.push(e.data);
+                }
             };
 
+            // 3. Este evento se dispara automáticamente al terminar el metraje
+            recorder.onstop = () => {
+                // El Santo Grial: Crear un BLOB (Binary Large Object) con los datos del video real
+                const videoBlob = new Blob(chunks, { type: 'video/webm' });
+                
+                if (videoBlob.size === 0) {
+                    alert("Error de hardware: El navegador no pudo volcar los frames al archivo. Intenta recargar la página e importar un archivo de video diferente.");
+                    resetExportButton();
+                    return;
+                }
+
+                const videoURL = URL.createObjectURL(videoBlob);
+                
+                // Crear un anclaje invisible de descarga en el DOM y hacerle click por software
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.href = videoURL;
+                downloadAnchor.download = `DreamForge_Master_Render_${Date.now()}.webm`;
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                
+                // Limpieza de memoria ram para evitar crashes
+                setTimeout(() => {
+                    document.body.removeChild(downloadAnchor);
+                    URL.revokeObjectURL(videoURL);
+                }, 100);
+
+                alert("🚀 ¡Exportación exitosa!\nEl video se ha descargado y procesado de forma local mediante tu tarjeta gráfica.");
+                resetExportButton();
+            };
+
+            function resetExportButton() {
+                exportBtn.textContent = originalText;
+                exportBtn.style.background = "";
+                exportBtn.disabled = false;
+                currentTime = 0;
+                updateMonitor();
+            }
+
+            // 4. Calcular el fin matemático del proyecto
             let totalDuration = 0;
             timelineClips.forEach(c => { if (c.start + c.duration > totalDuration) totalDuration = c.start + c.duration; });
 
-            recorder.start();
+            // Comenzar el grabado físico
+            recorder.start(100); // Cortar el video en paquetes de 100ms para asegurar estabilidad en archivos grandes
             isPlaying = true;
 
-            // Ciclo síncrono ultra-rápido de renderizado dedicado para grabación
+            // 5. Ciclo síncrono controlado por reloj dedicado
             const renderInterval = setInterval(() => {
                 currentTime += 1 / 30;
                 updateMonitor();
 
+                // Calcular porcentaje visual para el usuario
+                const pct = Math.min(100, (currentTime / totalDuration) * 100);
+                exportBtn.textContent = `⚙️ Guardando... ${Math.floor(pct)}%`;
+
                 if (currentTime >= totalDuration) {
                     clearInterval(renderInterval);
                     isPlaying = false;
-                    recorder.stop();
-                    timelineClips.forEach(c => { const a = assets[c.assetId]; if (a && a.element.pause) a.element.pause(); });
+                    
+                    // Forzar al grabador a cerrar el archivo y activar la descarga
+                    recorder.requestData();
+                    setTimeout(() => {
+                        recorder.stop();
+                        timelineClips.forEach(c => { const a = assets[c.assetId]; if (a && a.element.pause) a.element.pause(); });
+                    }, 200); 
                 }
             }, 1000 / 30);
         }
